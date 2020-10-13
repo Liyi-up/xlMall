@@ -1,10 +1,9 @@
-const getters = {
-  cartList(state) {
-    return state.cartList
-  },
-  cartCount(state, getters) {
-    return getters.cartList.length
-  }
+export default {
+cartLength(state) {
+  return state.cartList.length;
 }
-
-export default getters
+, cartList(state) {
+    return state.cartList;
+  }
+  ,
+}

@@ -8,11 +8,13 @@ import store from './store'
 import VueLazyLoad from 'vue-lazyload'
 //某些移动端设备点击延迟 解决方案
 import FastClick from 'fastclick'
+import toast from "./components/common/toast/";
 
 Vue.config.productionTip = false,
 //Vue实例是可以作为事件总线的
-  Vue.prototype.$bus = new Vue();
-
+Vue.prototype.$bus = new Vue();
+//安装toast插件
+Vue.use(toast);
 Vue.use(VueLazyLoad, {
   preLoad: 1,
   loading: require('assets/img/common/loding.png')

@@ -16,7 +16,7 @@
         <detail-recommend-info ref="recommend" :recommend-list="recommendList"></detail-recommend-info>
       </div>
     </scroll>
-    <detail-bottom-bar @addToCart="addToCart"></detail-bottom-bar>
+    <detail-bottom-bar @addToCart="addToCart" @buyClick="buyClick" @addCollect="addCollect"></detail-bottom-bar>
     <back-top @backTop="backTop" class="back-top" v-show="showBackTop">
       <img src="~assets/img/common/top.png" alt="">
     </back-top>
@@ -41,9 +41,11 @@
   import {getDetail, getRecommend, Goods, Shop, GoodsParam} from "network/detail";
   import {backTopMixin} from "@/common/mixin";
   import {BACKTOP_DISTANCE} from "@/common/const";
+  //将vuex中的actions映射的组件中的methods
+  import {mapActions} from 'vuex';
 
   export default {
-		name: "Detail",
+    name: "Detail",
     components: {
       DetailBaseInfo,
       DetailShopInfo,
@@ -52,16 +54,16 @@
       DetailCommentInfo,
       DetailRecommendInfo,
       DetailBottomBar,
-		  Scroll,
-		  DetailNavBar,
+      Scroll,
+      DetailNavBar,
       DetailSwiper,
       BackTop
     },
     mixins: [backTopMixin],
     data() {
-		  return {
-		    iid: '',
-		    topImages: [],
+      return {
+        iid: '',
+        topImages: [],
         goods: {},
         shop: {},
         detailInfo: {},
@@ -73,16 +75,19 @@
       }
     },
     created() {
-		  this._getDetailData()
+      this._getDetailData()
       this._getRecommend()
     },
     updated() {
-		  // 获取需要的四个offsetTop
+      // 获取需要的四个offsetTop
       this._getOffsetTops()
     },
     methods: {
-		  _getOffsetTops() {
-		    this.themeTops = []
+      ...mapActions({
+        add: 'addCart'
+      }),
+      _getOffsetTops() {
+        this.themeTops = []
         this.themeTops.push(this.$refs.base.$el.offsetTop)
         this.themeTops.push(this.$refs.param.$el.offsetTop)
         this.themeTops.push(this.$refs.comment.$el.offsetTop)
@@ -90,7 +95,7 @@
         this.themeTops.push(Number.MAX_VALUE)
       },
       contentScroll(position) {
-		    // 1.监听backTop的显示
+        // 1.监听backTop的显示
         this.showBackTop = position.y < -BACKTOP_DISTANCE
 
         // 2.监听滚动到哪一个主题
@@ -113,7 +118,7 @@
            * 疑惑: 在第一个判断中, 为什么不能直接判断(currentPos >= iPos)即可?
            * 解答: 比如在某一个currentPos大于第0个时, 就会break, 不会判断后面的i了.
            */
-          if (position >= iPos && position < this.themeTops[i+1]) {
+          if (position >= iPos && position < this.themeTops[i + 1]) {
             if (this.currentIndex !== i) {
               this.currentIndex = i;
             }
@@ -127,18 +132,28 @@
       },
       addToCart() {
         // 1.创建对象
-        const obj = {}
+        const order = {}
         // 2.对象信息
-        obj.iid = this.iid;
-        obj.imgURL = this.topImages[0]
-        obj.title = this.goods.title
-        obj.desc = this.goods.desc;
-        obj.newPrice = this.goods.nowPrice;
+        order.iid = this.iid;
+        order.imgURL = this.topImages[0]
+        order.title = this.goods.title
+        order.desc = this.goods.desc;
+        order.newPrice = this.goods.nowPrice;
         // 3.添加到Store中
-        this.$store.commit('addCart', obj)
+        //将订单存储到vuex中
+        this.add(order).then(res => {
+          this.$toast.show(res)
+        })
       },
-		  _getDetailData() {
-		    // 1.获取iid
+      buyClick() {
+        this.$toast.show("正在生成订单",3000)
+      }
+      ,
+      addCollect() {
+        this.$toast.show("商品收藏成功",3000)
+      },
+      _getDetailData() {
+        // 1.获取iid
         const iid = this.$route.query.iid
         this.iid = iid
 
@@ -175,7 +190,7 @@
         })
       }
     }
-	}
+  }
 </script>
 
 <style scoped>
